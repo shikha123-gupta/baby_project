@@ -64,7 +64,11 @@
                    </tr>
                  </tbody>
                </table>
+               @if(Auth::check())
+               <a href="{{url('front/checkout')}}" class="aa-cart-view-btn">Proced to Checkout</a>
+               @else
                <a href="{{url('front/account')}}" class="aa-cart-view-btn">Proced to Checkout</a>
+              @endif
              </div>
            </div>
          </div>

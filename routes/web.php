@@ -24,6 +24,10 @@ use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ProductimageController;
 use App\Http\Controllers\FrontController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\OrderdetailsController;
+use App\Http\Controllers\GoogleController;
+use App\Http\Controllers\Auth\ForgotPasswordController;
+
 
 
 
@@ -117,5 +121,46 @@ Route::post('/addtocart',[FrontController::class,'addtocart']);
 
 //usercontroller
 Route::get('front/account',[FrontController::class,'account']);
+Route::get('front/checkout',[FrontController::class,'checkout']);
 Route::post('user/register',[UserController::class,'register']);
 Route::post('user/login',[UserController::class,'login']);
+Route::get('user/logout',[UserController::class,'logout']);
+Route::post('/place_order',[FrontController::class,'place_order']);
+Route::get('thanks',[FrontController::class,'thanks']);
+
+Auth::routes();
+
+Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
+//orderdetails
+Route::get('order/orders',[OrderdetailsController::class,'order']);
+Route::get('order/paid_order/{id}',[OrderdetailsController::class,'paid_order']);
+Route::get('order/invoice/{id}',[OrderdetailsController::class,'invoice']);
+
+
+// cache
+Route::get('/clear', function() { 
+    Artisan::call('cache:clear');
+    Artisan::call('config:clear');
+    Artisan::call('config:cache');
+    Artisan::call('view:clear');
+    Artisan::call('route:clear'); 
+    return "Cleared!"; 
+});
+Route::middleware(['auth:sanctum', 'verified'])->get('/dashboard', function () {
+    return view('dashboard');
+})->name('dashboard');
+
+//googlecontroller
+Route::get('auth/google', [GoogleController::class, 'redirectToGoogle']);
+Route::get('auth/google/callback', [GoogleController::class, 'handleGoogleCallback']);
+
+//forgotpassword controller
+Route::get('forget-password', [ForgotPasswordController::class, 'showForgetPasswordForm'])->name('forget.password.get');
+Route::post('forget-password', [ForgotPasswordController::class, 'submitForgetPasswordForm'])->name('forget.password.post'); 
+Route::get('reset-password/{token}', [ForgotPasswordController::class, 'showResetPasswordForm'])->name('reset.password.get');
+Route::post('reset-password', [ForgotPasswordController::class, 'submitResetPasswordForm'])->name('reset.password.post');
+
+Route::post('/paytm-callback', [FrontController::class,'paytmCallback']);
+Route::post('/search', [ProductController::class,'search']);
+
+

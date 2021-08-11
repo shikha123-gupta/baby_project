@@ -8,6 +8,7 @@ use App\Models\Size;
 use App\Models\Color;
 use App\Models\Categories;
 
+
 class ProductController extends Controller
 {
     public function add(){
@@ -142,6 +143,14 @@ class ProductController extends Controller
         if($deleted){
             return redirect('product/display')->with('message','Data Successfully Deleted!.');
         }
+    }
+    public function search(Request $req){
+         $q=$req->input('query');
+        // 
+        //  die;
+         $data=Product::where('product_name','Like','%'.$q.'%')->get();
+         return view('search',compact('data'));
+        //   dd($data);
     }
 
 }

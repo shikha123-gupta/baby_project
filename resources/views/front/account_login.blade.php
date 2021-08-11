@@ -1,14 +1,14 @@
 <!-- Cart view section -->
 <section id="aa-myaccount">
-@if(session('message'))
- <p class="alert alert-success">
-  {{session('message')}}
- </p>
-@endif
    <div class="container">
      <div class="row">
        <div class="col-md-12">
-        <div class="aa-myaccount-area">         
+        <div class="aa-myaccount-area"> 
+        @if(session('message'))
+          <p class="alert alert-success">
+             {{session('message')}}
+          </p>
+        @endif        
             <div class="row">
               <div class="col-md-6">
                 <div class="aa-myaccount-login">
@@ -16,12 +16,17 @@
                  <form action="{{url('user/login')}}" method="post" class="aa-login-form">
                  @csrf
                   <label for="">Username or Email address<span>*</span></label>
-                   <input type="text" name="email"placeholder="Username or email">
+                   <input type="text" name="email" placeholder="Username or email">
                    <label for="">Password<span>*</span></label>
                     <input type="password" name="password" placeholder="Password">
+                    <label class="rememberme" for="rememberme" style="margin-top:-15px;"><input type="checkbox" id="rememberme"> Remember me </label>
+                    <p class="aa-lost-password" style="text-align: right;margin-top: -29px;margin-left: -5px;"><a href="{{ route('forget.password.get') }}" style="color:#5c6bc0;font-weight:400">Forgot Your password?</a></p>
                     <button type="submit" class="aa-browse-btn">Login</button>
-                    <label class="rememberme" for="rememberme"><input type="checkbox" id="rememberme"> Remember me </label>
-                    <p class="aa-lost-password"><a href="#">Lost your password?</a></p>
+                      <div class="flex items-center justify-end mt-4">
+                        <a href="{{ url('auth/google') }}">
+                          <img src="https://developers.google.com/identity/images/btn_google_signin_dark_normal_web.png" style="margin-left: 1em;margin-top:6px;">
+                        </a>
+                      </div>
                   </form>
                 </div>
               </div>

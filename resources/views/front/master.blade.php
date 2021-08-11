@@ -99,12 +99,17 @@
               <!-- / header top left -->
               <div class="aa-header-top-right">
                 <ul class="aa-head-top-nav-right">
+                  <li class="hidden-xs"><a href="">@if(Auth::check()) {{ Auth::user()->name }} @endif</a></li>
+                  @if(Auth::check())
                   <li><a href="account.html">My Account</a></li>
-                  <li class="hidden-xs"><a href="wishlist.html">Wishlist</a></li>
+                  <!-- <li class="hidden-xs"><a href="wishlist.html">Wishlist</a></li> -->
                   <li class="hidden-xs"><a href="cart.html">My Cart</a></li>
                   <li class="hidden-xs"><a href="checkout.html">Checkout</a></li>
-                  <li><a href="" data-toggle="modal" data-target="#login-modal">Login</a></li>
-                </ul>
+                  <li><a href="{{url('user/logout')}}">logout</a></li>
+                  @endif
+                  <li><a href="" data-toggle="modal" data-target="#login-modal">Login </a></li>
+                 
+                 </ul>
               </div>
             </div>
           </div>
@@ -122,7 +127,7 @@
               <!-- logo  -->
               <div class="aa-logo">
                 <!-- Text based logo -->
-                <a href="index.html">
+                <a href="{{url('/')}}">
                   <span class="fa fa-shopping-cart"></span>
                   <p>Baby<strong>Shop</strong> <span>You Shopping Now</span></p>
                 </a>
@@ -131,47 +136,79 @@
               </div>
               <!-- / logo  -->
                <!-- cart box -->
+              <?php 
+              $session=Session::getId();
+              //dd($session);
+              $r = DB::table('carts')->where('session_id',$session)->get(); 
+              //dd($r);
+
+              if(Auth::check())
+               {
+                 $cart = DB::table('carts')->where('user_email',Auth::user()->email)->get();  
+               } 
+              ?>
               <div class="aa-cartbox">
                 <a class="aa-cart-link" href="#">
                   <span class="fa fa-shopping-basket"></span>
                   <span class="aa-cart-title">SHOPPING CART</span>
-                  <span class="aa-cart-notify">2</span>
+                  <span class="aa-cart-notify">@if(Auth::check()) {{$cart->count()}} @else {{$r->count()}} @endif</span>
                 </a>
                 <div class="aa-cartbox-summary">
                   <ul>
+                     <?php 
+                    $total_amount=0;
+                    ?>
+                  @if(Auth::check())
+                 
+                    @if($cart->count()>0)
+                      @foreach($cart as $cartdata)
                     <li>
-                      <a class="aa-cartbox-img" href="#"><img src="img/woman-small-2.jpg" alt="img"></a>
+                      <a class="aa-cartbox-img" href="#"><img src="{{url('upload/'. $cartdata->image)}}" alt="img"></a>
                       <div class="aa-cartbox-info">
-                        <h4><a href="#">Product Name</a></h4>
-                        <p>1 x $250</p>
+                        <h4><a href="#">{{$cartdata->product_name}}</a></h4>
+                        <p>{{$cartdata->quantity}} x ${{$cartdata->price}}</p>
                       </div>
                       <a class="aa-remove-product" href="#"><span class="fa fa-times"></span></a>
-                    </li>
-                    <li>
-                      <a class="aa-cartbox-img" href="#"><img src="img/woman-small-1.jpg" alt="img"></a>
+                    </li> 
+                    <?php $total_amount=$total_amount+($cartdata->price*$cartdata->quantity);?>
+                      @endforeach
+                    @endif
+                    
+                    @else
+                    @if($r->count()>0)
+                      @foreach($r as $cartdata1)
+                      <li>
+                      <a class="aa-cartbox-img" href="#"><img src="{{url('upload/'. $cartdata1->image)}}" alt="img"></a>
                       <div class="aa-cartbox-info">
-                        <h4><a href="#">Product Name</a></h4>
-                        <p>1 x $250</p>
+                        <h4><a href="#">{{$cartdata1->product_name}}</a></h4>
+                        <p>{{$cartdata1->quantity}} x ${{$cartdata1->price}}</p>
                       </div>
                       <a class="aa-remove-product" href="#"><span class="fa fa-times"></span></a>
-                    </li>                    
+                    </li> 
+                    <?php $total_amount=$total_amount+($cartdata1->price*$cartdata1->quantity);?>
+                      @endforeach
+                    @endif
+                    
                     <li>
                       <span class="aa-cartbox-total-title">
                         Total
                       </span>
                       <span class="aa-cartbox-total-price">
-                        $500
+                        $<?php echo $total_amount;?>
                       </span>
                     </li>
+                  @endif
                   </ul>
+
                   <a class="aa-cartbox-checkout aa-primary-btn" href="checkout.html">Checkout</a>
                 </div>
               </div>
               <!-- / cart box -->
               <!-- search box -->
               <div class="aa-search-box">
-                <form action="">
-                  <input type="text" name="" id="" placeholder="Search here ex. 'man' ">
+                <form action="/search" method="post">
+                 @csrf
+                  <input type="text" name="query" id="" placeholder="Search here ex. 'man' ">
                   <button type="submit"><span class="fa fa-search"></span></button>
                 </form>
               </div>
@@ -316,10 +353,13 @@
   </section>
   <!-- / menu -->
   <!-- Start slider -->
+  @yield('forget')
   @yield('content')
   @yield('details')
   @yield('cart')
   @yield('account')
+  @yield('checkout')
+  @yield('thanks')
   <!-- / slider -->
   <!-- Start Promo section -->
  
@@ -452,16 +492,17 @@
         <div class="modal-body">
         <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
           <h4>Login or Register</h4>
-          <form class="aa-login-form" action="">
+          <form class="aa-login-form" action="{{url('user/login')}}" method="post">
+          @csrf
             <label for="">Username or Email address<span>*</span></label>
-            <input type="text" placeholder="Username or email">
+            <input type="text" name="email" placeholder="Username or email">
             <label for="">Password<span>*</span></label>
-            <input type="password" placeholder="Password">
+            <input type="password" name="password" placeholder="Password">
             <button class="aa-browse-btn" type="submit">Login</button>
             <label for="rememberme" class="rememberme"><input type="checkbox" id="rememberme"> Remember me </label>
             <p class="aa-lost-password"><a href="#">Lost your password?</a></p>
             <div class="aa-register-now">
-              Don't have an account?<a href="account.html">Register now!</a>
+              Don't have an account?<a href="{{url('front/account')}}">Register now!</a>
             </div>
           </form>
         </div>                        
@@ -490,5 +531,19 @@
   <script type="text/javascript" src="{{url('js/nouislider.js')}}"></script>
   <!-- Custom js -->
   <script src="{{url('js/custom.js')}}"></script> 
+  
+
+  <script>
+  function selectPaymentMethod(){
+    // alert('hello');
+    if($('.stripe').is(':checked') || $('.cod').is(':checked') || $('.paytm').is(':checked') || $('.Instamojo').is(':checked') || $('.Razorpay').is(':checked') ){
+      alert('checked');
+    }
+    else{
+      alert('Please select payment method');
+      return false;
+    }
+  }
+  </script>
   </body>
 </html>
